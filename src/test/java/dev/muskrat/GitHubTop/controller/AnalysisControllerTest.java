@@ -50,7 +50,7 @@ public class AnalysisControllerTest {
 
     @Test
     @SneakyThrows
-    void incorrectDataTest1() {
+    void incorrectDataTest() {
         mockMvc.perform(
             get(String.format("/analysis/best/%s/%s", REAL_PROFILE, REAL_REPO + "()_"))
                 .contentType(MediaType.APPLICATION_JSON)

@@ -1,11 +1,11 @@
 package dev.muskrat.GitHubTop.service;
 
 import dev.muskrat.GitHubTop.models.Contributor;
-import dev.muskrat.GitHubTop.service.AnalysisService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.util.List;
@@ -25,14 +25,16 @@ public class AnalysisServiceTest {
 
     @Test
     void successTest() {
-        Contributor first, second, third;
+        Contributor first = new Contributor("first", 5);
+        Contributor second = new Contributor("second", 4);
+        Contributor third = new Contributor("third", 3);
 
         Contributor[] contrs = {
             new Contributor("fourth", 2),
-            second = new Contributor("second", 4),
+            second,
             new Contributor("fifth", 1),
-            third = new Contributor("third", 3),
-            first = new Contributor("first", 5),
+            third,
+            first,
         };
 
         AnalysisService service = mock(AnalysisService.class);
@@ -110,7 +112,9 @@ public class AnalysisServiceTest {
             () -> service.findBestContributors(nonexistingProfile, "abcde")
         );
 
-        assertEquals("Repository not found", exception1.getStatusText());
-        assertEquals("Repository not found", exception2.getStatusText());
+        assertEquals(HttpStatus.NOT_FOUND, exception1.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, exception2.getStatusCode());
+        assertEquals("Repository or user not found", exception1.getStatusText());
+        assertEquals("Repository or user not found", exception2.getStatusText());
     }
 }

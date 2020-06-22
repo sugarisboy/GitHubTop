@@ -1,6 +1,7 @@
 package dev.muskrat.GitHubTop.service;
 
 import dev.muskrat.GitHubTop.models.Contributor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,18 @@ import java.util.stream.Collectors;
 @Service
 public class AnalysisService {
 
+    @Value("${api.github.host}")
+    private String apiHost;
+
+    @Value("${api.github.path}")
+    private String apiPath;
+
     public List<Contributor> findBestContributors(String profile, String repository) throws HttpClientErrorException {
         Contributor[] contributors = findContributorsForRepo(profile, repository);
 
-        if (contributors == null)
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Repository not found");
+        if (contributors == null) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Repository or user not found");
+        }
 
         return Arrays.stream(contributors)
             .sorted(Comparator.comparingInt(Contributor::getContributions).reversed())
@@ -31,7 +39,9 @@ public class AnalysisService {
     }
 
     public Contributor[] findContributorsForRepo(String profile, String repository) {
-        String path = "repos/" + profile + "/" + repository + "/contributors";
+        String path = apiPath
+            .replace("[profile]", profile)
+            .replace("[repository]", repository);
         URI url = UriComponentsBuilder.newInstance()
             .scheme("https")
             .host("api.github.com")
@@ -43,10 +53,11 @@ public class AnalysisService {
             ResponseEntity<Contributor[]> response = template.getForEntity(url, Contributor[].class);
             return response.getBody();
         } catch (HttpStatusCodeException e) {
-            if (e.getStatusCode().equals(HttpStatus.NOT_FOUND))
+            if (e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
                 return null;
-            else
+            } else {
                 throw e;
+            }
         }
     }
 }
