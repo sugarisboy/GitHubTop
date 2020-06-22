@@ -44,7 +44,7 @@ public class AnalysisService {
             .replace("[repository]", repository);
         URI url = UriComponentsBuilder.newInstance()
             .scheme("https")
-            .host("api.github.com")
+            .host(apiHost)
             .path(path)
             .build().toUri();
 
